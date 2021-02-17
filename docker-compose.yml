@@ -1,4 +1,9 @@
 version: '2'
+
+networks:
+  external-network:
+    external: true
+
 services:
   influxdb:
     image: influxdb:latest
@@ -10,6 +15,8 @@ services:
       - INFLUXDB_DB=db0
       - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME}
       - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD}
+    networks:
+      - external-network
   chronograf:
     image: chronograf:latest
     ports:
@@ -19,9 +26,13 @@ services:
     depends_on:
       - influxdb
     environment:
+      - VIRTUAL_HOST=${CHRONOGRAF_HOST}
+      - VIRTUAL_PORT=8888
       - INFLUXDB_URL=http://influxdb:8086
       - INFLUXDB_USERNAME=${INFLUXDB_USERNAME}
       - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}
+    networks:
+      - external-network
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -34,6 +45,8 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    networks:
+      - external-network
 volumes:
   influxdb-storage:
   chronograf-storage:
